@@ -134,12 +134,7 @@ simnote/
 
 ## Roadmap
 
-- [x] v0.1: basic note taking
-- [ ] Categories / folders
-- [ ] Import and export (Markdown / TXT)
-- [ ] Font and font size settings
-- [ ] Resizable note list
-- [ ] More retro color themes
+- [x] basic note taking
 
 Ideas are welcome in [Issues](https://github.com/panco1995/simnote/issues).
 
