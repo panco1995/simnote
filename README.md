@@ -7,7 +7,6 @@
 A minimalist note-taking app with a retro 90s look.
 
 [![Release](https://img.shields.io/github/v/release/panco1995/simnote?include_prereleases)](https://github.com/panco1995/simnote/releases)
-[![CI](https://github.com/panco1995/simnote/actions/workflows/ci.yml/badge.svg)](https://github.com/panco1995/simnote/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Platforms](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 
@@ -135,6 +134,7 @@ simnote/
 ## Roadmap
 
 - [x] basic note taking
+- [x] i18n (multilingual support)
 
 Ideas are welcome in [Issues](https://github.com/panco1995/simnote/issues).
 

@@ -8,7 +8,8 @@
   --title-b: #a6caf0;
   --title-ia: #808080;
   --title-ib: #c0c0c0;
-  --font: Tahoma, "Microsoft Sans Serif", "SimSun", "宋体", "PingFang SC", sans-serif;
+  --font: Tahoma, "Microsoft Sans Serif", "PingFang SC", "PingFang TC", "Hiragino Sans", "Yu Gothic",
+    "Microsoft YaHei", "Microsoft JhengHei", "SimSun", "宋体", sans-serif;
   --mono: "Lucida Console", Consolas, "Courier New", "SimSun", "宋体", monospace;
 
   --raised: inset -1px -1px var(--dark), inset 1px 1px var(--hl), inset -2px -2px var(--shadow),
@@ -212,16 +213,46 @@ button:disabled svg {
   box-shadow: var(--window);
 }
 
-.menu-item.open > .menu-dropdown {
+.menu-item.open > .menu-dropdown,
+.menu-option.has-sub:hover > .menu-dropdown {
   display: block;
 }
 
+.menu-option > .menu-dropdown {
+  top: -4px;
+  left: calc(100% - 4px);
+  min-width: 148px;
+  color: #000;
+  background: var(--face);
+}
+
+.submenu-arrow {
+  width: 0;
+  height: 0;
+  align-self: center;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 4px solid #000;
+}
+
+.menu-option:hover > .submenu-arrow {
+  border-left-color: #fff;
+}
+
 .menu-option {
+  position: relative;
   display: flex;
   justify-content: space-between;
   gap: 24px;
   padding: 3px 16px 3px 20px;
   white-space: nowrap;
+}
+
+.menu-option.checked::before {
+  content: "✓";
+  position: absolute;
+  left: 5px;
+  font-weight: bold;
 }
 
 .menu-option:hover {
@@ -407,6 +438,14 @@ button:disabled svg {
   display: flex;
   gap: 2px;
   flex-shrink: 0;
+}
+
+#status-count {
+  min-width: 108px;
+}
+
+#status-save {
+  min-width: 96px;
 }
 
 .status-bar > div {

@@ -2,7 +2,8 @@ import "./style.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { fillIcons, ICONS } from "./icons";
-import { isTauri, loadRaw, saveRaw } from "./storage";
+import { detectLocale, isLocale, locale, t, useLocale, type Locale } from "./i18n";
+import { isTauri, loadLocale, loadRaw, saveLocale, saveRaw } from "./storage";
 
 interface Note {
   id: string;
@@ -21,6 +22,7 @@ let query = "";
 let saveTimer: number | undefined;
 let savePending = false;
 let saveBlocked = false;
+let statusKey = "";
 
 const byId = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -47,7 +49,30 @@ function fmt(ts: number) {
 
 function titleOf(n: Note) {
   const line = n.content.split("\n").find((l) => l.trim());
-  return line ? line.trim().slice(0, 60) : "Untitled";
+  return line ? line.trim().slice(0, 60) : t("note.untitled");
+}
+
+function errorText(e: unknown) {
+  if (typeof e === "string") return e;
+  if (e instanceof Error) return e.message;
+  return String(e);
+}
+
+function setStatus(key: string) {
+  statusKey = key;
+  statusSave.textContent = key ? t(key) : "";
+}
+
+function refreshMaximizeLabel() {
+  const maximized = document.body.classList.contains("maximized");
+  byId("btn-max").setAttribute("aria-label", t(maximized ? "window.restore" : "window.maximize"));
+}
+
+function applyLocale(code: Locale, refreshContent: boolean) {
+  useLocale(code);
+  setStatus(statusKey);
+  refreshMaximizeLabel();
+  if (refreshContent) render();
 }
 
 const current = () => notes.find((n) => n.id === currentId) ?? null;
@@ -67,7 +92,7 @@ function renderList() {
   if (!items.length) {
     const li = document.createElement("li");
     li.className = "empty";
-    li.textContent = query ? "No matching notes" : "No notes yet";
+    li.textContent = query ? t("list.noMatch") : t("list.empty");
     listEl.append(li);
     return;
   }
@@ -92,14 +117,16 @@ function renderEditor() {
   const content = n?.content ?? "";
   if (editorEl.value !== content) editorEl.value = content;
   editorEl.disabled = !n;
-  editorEl.placeholder = n ? "" : 'Click "New" to start writing.';
+  editorEl.placeholder = n ? "" : t("editor.placeholder");
   editorWrap.classList.toggle("disabled", !n);
   deleteBtn.disabled = !n;
   menuBar.querySelector('[data-action="delete"]')?.classList.toggle("disabled", !n);
   titleEl.textContent = n ? `${titleOf(n)} - SimNote` : "SimNote";
   const count = notes.filter((x) => x.content.trim()).length;
-  statusCount.textContent = `${count} ${count === 1 ? "note" : "notes"}`;
-  statusInfo.textContent = n ? `${[...n.content].length} characters  |  Modified ${fmt(n.updatedAt)}` : "";
+  statusCount.textContent = t(count === 1 ? "status.count.one" : "status.count", { count });
+  statusInfo.textContent = n
+    ? t("status.info", { count: [...n.content].length, time: fmt(n.updatedAt) })
+    : "";
 }
 
 function render() {
@@ -112,7 +139,7 @@ function render() {
 function scheduleSave() {
   if (saveBlocked) return;
   savePending = true;
-  statusSave.textContent = "Saving...";
+  setStatus("status.saving");
   clearTimeout(saveTimer);
   saveTimer = window.setTimeout(flush, 500);
 }
@@ -123,11 +150,12 @@ async function flush() {
   savePending = false;
   try {
     await saveRaw(JSON.stringify(notes.filter((n) => n.content.trim())));
-    statusSave.textContent = "Saved";
+    setStatus("status.saved");
   } catch (e) {
     savePending = true;
-    statusSave.textContent = "Save failed";
-    await showDialog({ title: "SimNote", message: `Failed to save notes.\n${e}`, icon: "warn", buttons: ["OK"] });
+    setStatus("status.saveFailed");
+    const message = isTauri ? errorText(e) : t("error.save", { detail: errorText(e) });
+    await showDialog({ title: "SimNote", message, icon: "warn", buttons: [t("dialog.ok")] });
   }
 }
 
@@ -162,10 +190,10 @@ async function deleteNote() {
   if (!n) return;
   if (n.content.trim()) {
     const choice = await showDialog({
-      title: "Confirm Note Delete",
-      message: `Are you sure you want to delete "${titleOf(n)}"?`,
+      title: t("dialog.delete.title"),
+      message: t("dialog.delete.message", { title: titleOf(n) }),
       icon: "warn",
-      buttons: ["Yes", "No"],
+      buttons: [t("dialog.yes"), t("dialog.no")],
     });
     if (choice !== 0) return;
   }
@@ -188,16 +216,25 @@ function moveSelection(delta: number) {
 
 function about() {
   return showDialog({
-    title: "About SimNote",
-    message:
-      `SimNote v${VERSION}\n` +
-      "A minimalist note-taking app with a retro 90s look.\n\n" +
-      "SimNote is open source software, released under the MIT License.",
-    badge: "Open Source",
+    title: t("dialog.about.title"),
+    message: t("dialog.about.message", { version: VERSION }),
+    badge: t("dialog.about.badge"),
     link: REPO_URL,
     icon: "info",
-    buttons: ["OK"],
+    buttons: [t("dialog.ok")],
   });
+}
+
+async function chooseLocale(code: string) {
+  if (!isLocale(code) || code === locale()) return;
+  try {
+    await saveLocale(code);
+  } catch (e) {
+    const message = isTauri ? errorText(e) : t("error.settings", { detail: errorText(e) });
+    await showDialog({ title: "SimNote", message, icon: "warn", buttons: [t("dialog.ok")] });
+    return;
+  }
+  applyLocale(code, true);
 }
 
 function openLink(url: string) {
@@ -236,7 +273,7 @@ function showDialog(opts: DialogOptions): Promise<number> {
       <div class="window dialog" role="dialog">
         <div class="title-bar">
           <span class="title-bar-text"></span>
-          <div class="title-bar-controls"><button class="btn-close" aria-label="Close">${ICONS.close}</button></div>
+          <div class="title-bar-controls"><button class="btn-close">${ICONS.close}</button></div>
         </div>
         <div class="dialog-body">
           <div class="dialog-icon">${ICONS[opts.icon]}</div>
@@ -291,7 +328,9 @@ function showDialog(opts: DialogOptions): Promise<number> {
       b.addEventListener("click", () => done(i));
       box.append(b);
     });
-    overlay.querySelector<HTMLButtonElement>(".btn-close")!.addEventListener("click", () => done(cancelIndex));
+    const closeBtn = overlay.querySelector<HTMLButtonElement>(".btn-close")!;
+    closeBtn.setAttribute("aria-label", t("window.close"));
+    closeBtn.addEventListener("click", () => done(cancelIndex));
 
     document.addEventListener("keydown", onKey, true);
     document.body.append(overlay);
@@ -331,8 +370,12 @@ function setupMenus() {
   menuBar.addEventListener("mousedown", (e) => e.preventDefault());
   menuBar.addEventListener("click", (e) => {
     const opt = (e.target as HTMLElement).closest<HTMLElement>(".menu-option");
-    if (!opt || opt.classList.contains("disabled")) return;
+    if (!opt || opt.classList.contains("disabled") || opt.classList.contains("has-sub")) return;
     closeMenus();
+    if (opt.dataset.locale) {
+      void chooseLocale(opt.dataset.locale);
+      return;
+    }
     actions[opt.dataset.action!]?.();
   });
   document.addEventListener("mousedown", (e) => {
@@ -367,7 +410,7 @@ async function setupWindow() {
     const maximized = await win.isMaximized();
     document.body.classList.toggle("maximized", maximized);
     maxBtn.innerHTML = maximized ? ICONS.restore : ICONS.max;
-    maxBtn.setAttribute("aria-label", maximized ? "Restore" : "Maximize");
+    refreshMaximizeLabel();
   };
   await win.onResized(syncMaximized);
   await syncMaximized();
@@ -435,25 +478,43 @@ function setupEvents() {
 
 async function init() {
   fillIcons();
+  let saved = "";
+  try {
+    saved = await loadLocale();
+  } catch {
+    saved = "";
+  }
+  const initial = isLocale(saved) ? saved : detectLocale();
+  if (saved !== initial) {
+    try {
+      await saveLocale(initial);
+    } catch {
+      // The UI still follows the detected language if the setting cannot be stored yet.
+    }
+  }
+  applyLocale(initial, false);
   setupMenus();
   setupEvents();
   await setupWindow();
 
   try {
-    const data = JSON.parse(await loadRaw());
-    if (!Array.isArray(data)) throw new Error("Invalid data format");
+    const raw = await loadRaw();
+    let data: unknown;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new Error("format");
+    }
+    if (!Array.isArray(data)) throw new Error("format");
     notes = data;
-    statusSave.textContent = "Ready";
+    setStatus("status.ready");
   } catch (e) {
     // Never overwrite a data file we failed to read.
     saveBlocked = true;
-    statusSave.textContent = "Load failed";
-    await showDialog({
-      title: "SimNote",
-      message: `Failed to load notes. Changes made in this session will not be saved.\n${e}`,
-      icon: "warn",
-      buttons: ["OK"],
-    });
+    setStatus("status.loadFailed");
+    const message =
+      errorText(e) === "format" ? t("error.format") : isTauri ? errorText(e) : t("error.load", { detail: errorText(e) });
+    await showDialog({ title: "SimNote", message, icon: "warn", buttons: [t("dialog.ok")] });
   }
 
   select(visibleNotes()[0]?.id ?? null);

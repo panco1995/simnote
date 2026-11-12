@@ -14,35 +14,50 @@
           <span id="title-text">SimNote</span>
         </div>
         <div class="title-bar-controls">
-          <button id="btn-min" aria-label="Minimize" data-icon="min"></button>
-          <button id="btn-max" aria-label="Maximize" data-icon="max"></button>
-          <button id="btn-close" class="btn-close" aria-label="Close" data-icon="close"></button>
+          <button id="btn-min" data-i18n-aria="window.minimize" data-icon="min"></button>
+          <button id="btn-max" data-i18n-aria="window.maximize" data-icon="max"></button>
+          <button id="btn-close" class="btn-close" data-i18n-aria="window.close" data-icon="close"></button>
         </div>
       </div>
 
       <div class="menu-bar" id="menu-bar">
         <div class="menu-item">
-          <span class="menu-label"><u>F</u>ile</span>
+          <span class="menu-label" data-i18n="menu.file" data-i18n-mnemonic="menu.file.mnemonic"></span>
           <div class="menu-dropdown">
-            <div class="menu-option" data-action="new"><span><u>N</u>ew Note</span><span class="accel" data-accel="N"></span></div>
-            <div class="menu-option" data-action="delete"><span><u>D</u>elete Note</span><span class="accel">Del</span></div>
+            <div class="menu-option" data-action="new"><span data-i18n="menu.new" data-i18n-mnemonic="menu.new.mnemonic"></span><span class="accel" data-accel="N"></span></div>
+            <div class="menu-option" data-action="delete"><span data-i18n="menu.delete" data-i18n-mnemonic="menu.delete.mnemonic"></span><span class="accel">Del</span></div>
             <div class="menu-sep"></div>
-            <div class="menu-option" data-action="exit"><span>E<u>x</u>it</span><span class="accel"></span></div>
+            <div class="menu-option" data-action="exit"><span data-i18n="menu.exit" data-i18n-mnemonic="menu.exit.mnemonic"></span><span class="accel"></span></div>
           </div>
         </div>
         <div class="menu-item">
-          <span class="menu-label"><u>H</u>elp</span>
+          <span class="menu-label" data-i18n="menu.settings" data-i18n-mnemonic="menu.settings.mnemonic"></span>
           <div class="menu-dropdown">
-            <div class="menu-option" data-action="about"><span><u>A</u>bout SimNote</span><span class="accel"></span></div>
+            <div class="menu-option has-sub">
+              <span data-i18n="menu.language" data-i18n-mnemonic="menu.language.mnemonic"></span>
+              <span class="submenu-arrow"></span>
+              <div class="menu-dropdown">
+                <div class="menu-option" data-locale="en"><span>English</span></div>
+                <div class="menu-option" data-locale="zh-CN"><span>简体中文</span></div>
+                <div class="menu-option" data-locale="zh-TW"><span>繁體中文</span></div>
+                <div class="menu-option" data-locale="ja"><span>日本語</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="menu-item">
+          <span class="menu-label" data-i18n="menu.help" data-i18n-mnemonic="menu.help.mnemonic"></span>
+          <div class="menu-dropdown">
+            <div class="menu-option" data-action="about"><span data-i18n="menu.about" data-i18n-mnemonic="menu.about.mnemonic"></span><span class="accel"></span></div>
           </div>
         </div>
       </div>
 
       <div class="toolbar">
-        <button class="tool-btn" id="btn-new" title="New Note"><span data-icon="newNote"></span><span>New</span></button>
-        <button class="tool-btn" id="btn-delete" title="Delete Note"><span data-icon="deleteNote"></span><span>Delete</span></button>
+        <button class="tool-btn" id="btn-new" data-i18n-title="menu.new"><span data-icon="newNote"></span><span data-i18n="toolbar.new"></span></button>
+        <button class="tool-btn" id="btn-delete" data-i18n-title="menu.delete"><span data-icon="deleteNote"></span><span data-i18n="toolbar.delete"></span></button>
         <div class="toolbar-sep"></div>
-        <label class="search-label" for="search">Search:</label>
+        <label class="search-label" for="search" data-i18n="toolbar.search"></label>
         <input class="field" id="search" type="text" spellcheck="false" autocomplete="off" />
       </div>
 
@@ -54,8 +69,8 @@
       </div>
 
       <div class="status-bar">
-        <div id="status-count" style="width: 110px"></div>
-        <div id="status-save" style="width: 90px"></div>
+        <div id="status-count"></div>
+        <div id="status-save"></div>
         <div id="status-info" class="grow"></div>
         <div class="grip" id="grip"></div>
       </div>
