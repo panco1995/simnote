@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/icon.svg" />
+    <title>SimNote</title>
+  </head>
+  <body>
+    <div class="window app">
+      <div class="title-bar" data-tauri-drag-region>
+        <div class="title-bar-text">
+          <img class="title-icon" src="/icon.svg" alt="" />
+          <span id="title-text">SimNote</span>
+        </div>
+        <div class="title-bar-controls">
+          <button id="btn-min" aria-label="Minimize" data-icon="min"></button>
+          <button id="btn-max" aria-label="Maximize" data-icon="max"></button>
+          <button id="btn-close" class="btn-close" aria-label="Close" data-icon="close"></button>
+        </div>
+      </div>
+
+      <div class="menu-bar" id="menu-bar">
+        <div class="menu-item">
+          <span class="menu-label"><u>F</u>ile</span>
+          <div class="menu-dropdown">
+            <div class="menu-option" data-action="new"><span><u>N</u>ew Note</span><span class="accel" data-accel="N"></span></div>
+            <div class="menu-option" data-action="delete"><span><u>D</u>elete Note</span><span class="accel">Del</span></div>
+            <div class="menu-sep"></div>
+            <div class="menu-option" data-action="exit"><span>E<u>x</u>it</span><span class="accel"></span></div>
+          </div>
+        </div>
+        <div class="menu-item">
+          <span class="menu-label"><u>H</u>elp</span>
+          <div class="menu-dropdown">
+            <div class="menu-option" data-action="about"><span><u>A</u>bout SimNote</span><span class="accel"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="tool-btn" id="btn-new" title="New Note"><span data-icon="newNote"></span><span>New</span></button>
+        <button class="tool-btn" id="btn-delete" title="Delete Note"><span data-icon="deleteNote"></span><span>Delete</span></button>
+        <div class="toolbar-sep"></div>
+        <label class="search-label" for="search">Search:</label>
+        <input class="field" id="search" type="text" spellcheck="false" autocomplete="off" />
+      </div>
+
+      <div class="main">
+        <ul class="list" id="note-list" tabindex="0"></ul>
+        <div class="editor-wrap" id="editor-wrap">
+          <textarea id="editor" spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div id="status-count" style="width: 110px"></div>
+        <div id="status-save" style="width: 90px"></div>
+        <div id="status-info" class="grow"></div>
+        <div class="grip" id="grip"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
