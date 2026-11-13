@@ -25,6 +25,7 @@ The interface pays homage to 90s desktop software: blue gradient title bar, gray
 - Create, edit and delete notes
 - Rich text formatting: paragraph styles and headings, font, size, bold / italic / underline / strikethrough, superscript / subscript, font and highlight colors, alignment, line spacing, indent, bulleted / numbered lists, checklists, quotes, code blocks, links and horizontal lines
 - Interface in English, 简体中文, 繁體中文 and 日本語 (Settings → Language)
+- Classic and Modern themes (Settings → Theme)
 - Automatic saving, no manual action needed
 - The first line of a note becomes its title
 - Instant full-text search

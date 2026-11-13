@@ -11,6 +11,10 @@
   "menu.settings.mnemonic": "S",
   "menu.language": "Language",
   "menu.language.mnemonic": "L",
+  "menu.theme": "Theme",
+  "menu.theme.mnemonic": "T",
+  "theme.retro": "Classic",
+  "theme.modern": "Modern",
   "menu.help": "Help",
   "menu.help.mnemonic": "H",
   "menu.about": "About SimNote",
@@ -93,5 +97,6 @@
   "error.load": "Failed to load notes. Changes made in this session will not be saved.\n{detail}",
   "error.format": "The notes file is not valid JSON.",
   "error.settings": "Failed to save settings.\n{detail}",
-  "error.locale": "Unknown language."
+  "error.locale": "Unknown language.",
+  "error.theme": "Unknown theme."
 }

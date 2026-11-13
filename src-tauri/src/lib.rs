@@ -4,9 +4,12 @@ use std::fs;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
+use serde_json::{Map, Value};
 use tauri::{AppHandle, Manager, State};
 
 use i18n::I18n;
+
+const THEMES: &[&str] = &["retro", "modern"];
 
 fn app_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
@@ -24,11 +27,31 @@ fn write_atomic(path: &Path, data: &str) -> Result<(), String> {
     Ok(())
 }
 
+fn read_settings(app: &AppHandle) -> Map<String, Value> {
+    let Ok(dir) = app.path().app_data_dir() else {
+        return Map::new();
+    };
+    let Ok(text) = fs::read_to_string(dir.join("settings.json")) else {
+        return Map::new();
+    };
+    serde_json::from_str::<Value>(&text)
+        .ok()
+        .and_then(|value| value.as_object().cloned())
+        .unwrap_or_default()
+}
+
+fn update_setting(app: &AppHandle, key: &str, value: Value) -> Result<(), String> {
+    let mut settings = read_settings(app);
+    settings.insert(key.to_string(), value);
+    let path = app_dir(app)?.join("settings.json");
+    write_atomic(&path, &Value::Object(settings).to_string())
+}
+
 fn saved_locale(app: &AppHandle) -> Option<String> {
-    let path = app.path().app_data_dir().ok()?.join("settings.json");
-    let text = fs::read_to_string(path).ok()?;
-    let value: serde_json::Value = serde_json::from_str(&text).ok()?;
-    Some(value.get("locale")?.as_str()?.to_string())
+    read_settings(app)
+        .get("locale")?
+        .as_str()
+        .map(str::to_string)
 }
 
 fn notes_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -45,15 +68,31 @@ fn set_locale(app: AppHandle, i18n: State<I18n>, locale: String) -> Result<(), S
     if !i18n.known(&locale) {
         return Err(i18n.t("error.locale", &[]));
     }
-    let path = match app_dir(&app) {
-        Ok(dir) => dir.join("settings.json"),
-        Err(detail) => return Err(i18n.t("error.settings", &[("detail", &detail)])),
-    };
-    let body = serde_json::json!({ "locale": locale }).to_string();
-    if let Err(detail) = write_atomic(&path, &body) {
+    if let Err(detail) = update_setting(&app, "locale", Value::String(locale.clone())) {
         return Err(i18n.t("error.settings", &[("detail", &detail)]));
     }
     i18n.set(&locale);
+    Ok(())
+}
+
+#[tauri::command]
+fn get_theme(app: AppHandle) -> String {
+    read_settings(&app)
+        .get("theme")
+        .and_then(|value| value.as_str())
+        .filter(|theme| THEMES.contains(theme))
+        .unwrap_or("")
+        .to_string()
+}
+
+#[tauri::command]
+fn set_theme(app: AppHandle, i18n: State<I18n>, theme: String) -> Result<(), String> {
+    if !THEMES.contains(&theme.as_str()) {
+        return Err(i18n.t("error.theme", &[]));
+    }
+    if let Err(detail) = update_setting(&app, "theme", Value::String(theme)) {
+        return Err(i18n.t("error.settings", &[("detail", &detail)]));
+    }
     Ok(())
 }
 
@@ -93,7 +132,7 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            get_locale, set_locale, load_notes, save_notes
+            get_locale, set_locale, get_theme, set_theme, load_notes, save_notes
         ])
         .run(tauri::generate_context!())
         .expect("error while running SimNote");

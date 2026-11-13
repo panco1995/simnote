@@ -11,6 +11,10 @@
   "menu.settings.mnemonic": "S",
   "menu.language": "語言",
   "menu.language.mnemonic": "L",
+  "menu.theme": "主題",
+  "menu.theme.mnemonic": "T",
+  "theme.retro": "經典",
+  "theme.modern": "現代",
   "menu.help": "說明",
   "menu.help.mnemonic": "H",
   "menu.about": "關於 SimNote",
@@ -93,5 +97,6 @@
   "error.load": "筆記載入失敗。本次工作階段中的修改不會被儲存。\n{detail}",
   "error.format": "筆記檔案不是有效的 JSON。",
   "error.settings": "設定儲存失敗。\n{detail}",
-  "error.locale": "未知的語言。"
+  "error.locale": "未知的語言。",
+  "error.theme": "未知的主題。"
 }

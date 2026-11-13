@@ -5,7 +5,7 @@ import { isOpenableUrl, plainToHtml, RichEditor } from "./editor";
 import { setupFormatBar } from "./formatbar";
 import { fillIcons, ICONS } from "./icons";
 import { detectLocale, isLocale, locale, t, useLocale, type Locale } from "./i18n";
-import { isTauri, loadLocale, loadRaw, saveLocale, saveRaw } from "./storage";
+import { isTauri, loadLocale, loadRaw, loadTheme, saveLocale, saveRaw, saveTheme } from "./storage";
 
 interface Note {
   id: string;
@@ -20,6 +20,8 @@ interface Note {
 const VERSION = "0.1.0";
 const REPO_URL = "https://github.com/panco1995/simnote";
 const isMac = /mac/i.test(navigator.userAgent);
+const THEMES = ["retro", "modern"] as const;
+type Theme = (typeof THEMES)[number];
 
 let notes: Note[] = [];
 let currentId: string | null = null;
@@ -28,6 +30,7 @@ let saveTimer: number | undefined;
 let savePending = false;
 let saveBlocked = false;
 let statusKey = "";
+let currentTheme: Theme = "retro";
 let loadedId: string | null | undefined;
 
 const byId = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -245,6 +248,30 @@ function about() {
   });
 }
 
+function isTheme(value: string): value is Theme {
+  return (THEMES as readonly string[]).includes(value);
+}
+
+function applyTheme(theme: Theme) {
+  currentTheme = theme;
+  document.documentElement.dataset.theme = theme;
+  document.querySelectorAll<HTMLElement>(".menu-option[data-theme]").forEach((el) => {
+    el.classList.toggle("checked", el.dataset.theme === theme);
+  });
+}
+
+async function chooseTheme(theme: string) {
+  if (!isTheme(theme) || theme === currentTheme) return;
+  try {
+    await saveTheme(theme);
+  } catch (e) {
+    const message = isTauri ? errorText(e) : t("error.settings", { detail: errorText(e) });
+    await showDialog({ title: "SimNote", message, icon: "warn", buttons: [t("dialog.ok")] });
+    return;
+  }
+  applyTheme(theme);
+}
+
 async function chooseLocale(code: string) {
   if (!isLocale(code) || code === locale()) return;
   try {
@@ -449,6 +476,10 @@ function setupMenus() {
       void chooseLocale(opt.dataset.locale);
       return;
     }
+    if (opt.dataset.theme) {
+      void chooseTheme(opt.dataset.theme);
+      return;
+    }
     if (opt.dataset.cmd) {
       formatBar?.run(opt.dataset.cmd, opt.dataset.value);
       return;
@@ -582,6 +613,13 @@ async function init() {
     }
   }
   applyLocale(initial, false);
+  let savedTheme = "";
+  try {
+    savedTheme = await loadTheme();
+  } catch {
+    savedTheme = "";
+  }
+  applyTheme(isTheme(savedTheme) ? savedTheme : "retro");
   setupMenus();
   setupEvents();
   await setupWindow();

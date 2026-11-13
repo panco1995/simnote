@@ -8,6 +8,7 @@
   --title-b: #a6caf0;
   --title-ia: #808080;
   --title-ib: #c0c0c0;
+  --sel-soft: var(--title-b);
   --font: Tahoma, "Microsoft Sans Serif", "PingFang SC", "PingFang TC", "Hiragino Sans", "Yu Gothic",
     "Microsoft YaHei", "Microsoft JhengHei", "SimSun", "宋体", sans-serif;
   --mono: "Lucida Console", Consolas, "Courier New", "SimSun", "宋体", monospace;
@@ -569,7 +570,7 @@ button:disabled svg {
 }
 
 .list li.selected .d {
-  color: var(--title-b);
+  color: var(--sel-soft);
 }
 
 .list:focus li.selected {
@@ -929,4 +930,272 @@ body.maximized .grip {
 
 ::-webkit-scrollbar-button:single-button:horizontal:increment {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='7' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1h1v1h1v1h1v1H3v1H2v1H1v1H0z'/%3E%3C/svg%3E");
+}
+
+/* ---------- Modern theme ---------- */
+
+:root[data-theme="modern"] {
+  --face: #f5f6f8;
+  --hl: #ffffff;
+  --shadow: #9aa3b2;
+  --dark: #5c677a;
+  --sel: #2563eb;
+  --sel-soft: #dbeafe;
+  --title-a: #111827;
+  --title-b: #111827;
+  --title-ia: #4b5563;
+  --title-ib: #4b5563;
+  --font: "Segoe UI", system-ui, -apple-system, "PingFang SC", "PingFang TC", "Hiragino Sans", "Yu Gothic",
+    "Microsoft YaHei", "Microsoft JhengHei", sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Sarasa Mono SC", monospace;
+  --raised: none;
+  --pressed: none;
+  --sunken: none;
+  --window: 0 10px 28px rgba(15, 23, 42, 0.14), 0 0 0 1px #e5e7eb;
+  --thin-raised: none;
+  --thin-sunken: none;
+}
+
+:root[data-theme="modern"] body {
+  color: #1f2937;
+}
+
+:root[data-theme="modern"] .app {
+  padding: 0;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .title-bar {
+  height: 32px;
+  padding: 0 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+:root[data-theme="modern"] .title-bar-controls button {
+  width: 28px;
+  height: 20px;
+  border-radius: 5px;
+  background: transparent;
+  box-shadow: none;
+  color: #fff;
+}
+
+:root[data-theme="modern"] .title-bar-controls button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+:root[data-theme="modern"] .title-bar-controls .btn-close:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+:root[data-theme="modern"] button {
+  border-radius: 6px;
+  color: inherit;
+}
+
+:root[data-theme="modern"] button:active:not(:disabled) > * {
+  transform: none;
+}
+
+:root[data-theme="modern"] .btn {
+  background: #fff;
+  box-shadow: 0 0 0 1px #d1d5db;
+}
+
+:root[data-theme="modern"] .btn.default,
+:root[data-theme="modern"] .btn.default:active {
+  background: var(--sel);
+  color: #fff;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .btn:focus > span {
+  outline-color: #fff;
+}
+
+:root[data-theme="modern"] .menu-bar {
+  padding: 4px 6px;
+  gap: 2px;
+}
+
+:root[data-theme="modern"] .menu-label,
+:root[data-theme="modern"] .menu-item.open > .menu-label {
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+:root[data-theme="modern"] .menu-item:hover > .menu-label,
+:root[data-theme="modern"] .menu-item.open > .menu-label {
+  background: #e5e7eb;
+}
+
+:root[data-theme="modern"] .menu-dropdown {
+  border-radius: 8px;
+  padding: 4px;
+}
+
+:root[data-theme="modern"] .menu-option {
+  border-radius: 5px;
+  padding: 5px 16px 5px 22px;
+  color: inherit;
+}
+
+:root[data-theme="modern"] .submenu-arrow {
+  border-left-color: currentColor;
+}
+
+:root[data-theme="modern"] .menu-sep {
+  height: 1px;
+  margin: 4px 6px;
+  background: #e5e7eb;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .toolbar {
+  margin: 0;
+  padding: 4px 8px;
+  box-shadow: none;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+:root[data-theme="modern"] .toolbar-sep {
+  width: 1px;
+  background: #e5e7eb;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .tool-btn {
+  border-radius: 6px;
+}
+
+:root[data-theme="modern"] .tool-btn:hover:not(:disabled),
+:root[data-theme="modern"] .split:hover > .tool-btn:not(:disabled) {
+  background: #e5e7eb;
+}
+
+:root[data-theme="modern"] .tool-btn.active:not(:disabled) {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+:root[data-theme="modern"] .field,
+:root[data-theme="modern"] .combo select,
+:root[data-theme="modern"] .list,
+:root[data-theme="modern"] .editor-wrap,
+:root[data-theme="modern"] .dialog-field {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .combo::after {
+  top: 3px;
+  right: 3px;
+  height: 15px;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .combo select:focus {
+  background: #fff;
+  color: #111827;
+  border-color: var(--sel);
+}
+
+:root[data-theme="modern"] .main {
+  padding: 0 8px;
+}
+
+:root[data-theme="modern"] .list li {
+  border-radius: 5px;
+  border-style: solid;
+}
+
+:root[data-theme="modern"] .list:focus li.selected {
+  border-color: transparent;
+}
+
+:root[data-theme="modern"] .ProseMirror {
+  color: #111827;
+  font-size: 11pt;
+}
+
+:root[data-theme="modern"] .ProseMirror a {
+  color: var(--sel);
+}
+
+:root[data-theme="modern"] .ProseMirror pre,
+:root[data-theme="modern"] .ProseMirror :not(pre) > code {
+  background: #f3f4f6;
+  box-shadow: none;
+  border-radius: 4px;
+}
+
+:root[data-theme="modern"] .ProseMirror hr {
+  height: 1px;
+  background: #e5e7eb;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .ProseMirror input[type="checkbox"] {
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] .status-bar {
+  padding: 0 8px 6px;
+  gap: 8px;
+}
+
+:root[data-theme="modern"] .status-bar > div {
+  height: auto;
+  padding: 0;
+  box-shadow: none;
+  color: var(--dark);
+}
+
+:root[data-theme="modern"] .status-bar > .grip {
+  width: 12px;
+  background: none;
+}
+
+:root[data-theme="modern"] .dialog {
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+}
+
+:root[data-theme="modern"] .dialog-body {
+  background: #fff;
+}
+
+:root[data-theme="modern"] .palette,
+:root[data-theme="modern"] .swatch {
+  border-radius: 6px;
+}
+
+:root[data-theme="modern"] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+:root[data-theme="modern"] ::-webkit-scrollbar-track,
+:root[data-theme="modern"] ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+:root[data-theme="modern"] ::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-clip: padding-box;
+  box-shadow: none;
+}
+
+:root[data-theme="modern"] ::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }

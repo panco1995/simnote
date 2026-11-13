@@ -11,6 +11,10 @@
   "menu.settings.mnemonic": "S",
   "menu.language": "语言",
   "menu.language.mnemonic": "L",
+  "menu.theme": "主题",
+  "menu.theme.mnemonic": "T",
+  "theme.retro": "经典",
+  "theme.modern": "现代",
   "menu.help": "帮助",
   "menu.help.mnemonic": "H",
   "menu.about": "关于 SimNote",
@@ -93,5 +97,6 @@
   "error.load": "笔记加载失败。本次会话中的修改不会被保存。\n{detail}",
   "error.format": "笔记文件不是有效的 JSON。",
   "error.settings": "设置保存失败。\n{detail}",
-  "error.locale": "未知的语言。"
+  "error.locale": "未知的语言。",
+  "error.theme": "未知的主题。"
 }

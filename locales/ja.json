@@ -11,6 +11,10 @@
   "menu.settings.mnemonic": "S",
   "menu.language": "言語",
   "menu.language.mnemonic": "L",
+  "menu.theme": "テーマ",
+  "menu.theme.mnemonic": "T",
+  "theme.retro": "クラシック",
+  "theme.modern": "モダン",
   "menu.help": "ヘルプ",
   "menu.help.mnemonic": "H",
   "menu.about": "SimNote について",
@@ -93,5 +97,6 @@
   "error.load": "ノートを読み込めませんでした。このセッションでの変更は保存されません。\n{detail}",
   "error.format": "ノートファイルは正しい JSON ではありません。",
   "error.settings": "設定を保存できませんでした。\n{detail}",
-  "error.locale": "不明な言語です。"
+  "error.locale": "不明な言語です。",
+  "error.theme": "不明なテーマです。"
 }

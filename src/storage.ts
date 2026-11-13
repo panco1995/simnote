@@ -4,6 +4,7 @@ export const isTauri = "__TAURI_INTERNALS__" in window;
 
 const LOCAL_KEY = "simnote.notes";
 const LOCALE_KEY = "simnote.locale";
+const THEME_KEY = "simnote.theme";
 
 export async function loadLocale(): Promise<string> {
   if (isTauri) return invoke<string>("get_locale");
@@ -13,6 +14,16 @@ export async function loadLocale(): Promise<string> {
 export async function saveLocale(locale: string): Promise<void> {
   if (isTauri) await invoke("set_locale", { locale });
   else localStorage.setItem(LOCALE_KEY, locale);
+}
+
+export async function loadTheme(): Promise<string> {
+  if (isTauri) return invoke<string>("get_theme");
+  return localStorage.getItem(THEME_KEY) ?? "";
+}
+
+export async function saveTheme(theme: string): Promise<void> {
+  if (isTauri) await invoke("set_theme", { theme });
+  else localStorage.setItem(THEME_KEY, theme);
 }
 
 export async function loadRaw(): Promise<string> {
