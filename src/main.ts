@@ -1,13 +1,18 @@
 import "./style.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { isOpenableUrl, plainToHtml, RichEditor } from "./editor";
+import { setupFormatBar } from "./formatbar";
 import { fillIcons, ICONS } from "./icons";
 import { detectLocale, isLocale, locale, t, useLocale, type Locale } from "./i18n";
 import { isTauri, loadLocale, loadRaw, saveLocale, saveRaw } from "./storage";
 
 interface Note {
   id: string;
+  /** Plain text, used for titles, search and counts. */
   content: string;
+  /** Rich text; absent on notes written before formatting existed. */
+  html?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -23,11 +28,11 @@ let saveTimer: number | undefined;
 let savePending = false;
 let saveBlocked = false;
 let statusKey = "";
+let loadedId: string | null | undefined;
 
 const byId = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const listEl = byId<HTMLUListElement>("note-list");
-const editorEl = byId<HTMLTextAreaElement>("editor");
 const editorWrap = byId("editor-wrap");
 const searchEl = byId<HTMLInputElement>("search");
 const titleEl = byId("title-text");
@@ -36,6 +41,9 @@ const menuBar = byId("menu-bar");
 const statusCount = byId("status-count");
 const statusSave = byId("status-save");
 const statusInfo = byId("status-info");
+
+let rich: RichEditor;
+let formatBar: ReturnType<typeof setupFormatBar> | undefined;
 
 // ---------- helpers ----------
 
@@ -68,10 +76,22 @@ function refreshMaximizeLabel() {
   byId("btn-max").setAttribute("aria-label", t(maximized ? "window.restore" : "window.maximize"));
 }
 
+function accelText(spec: string) {
+  const parts = spec.split("+");
+  const key = parts.pop()!.toUpperCase();
+  const shift = parts.includes("Shift");
+  return isMac ? `${shift ? "⇧" : ""}⌘${key}` : `Ctrl+${shift ? "Shift+" : ""}${key}`;
+}
+
 function applyLocale(code: Locale, refreshContent: boolean) {
   useLocale(code);
+  document.querySelectorAll<HTMLElement>("[data-shortcut]").forEach((el) => {
+    el.title += ` (${accelText(el.dataset.shortcut!)})`;
+  });
   setStatus(statusKey);
   refreshMaximizeLabel();
+  formatBar?.closePalette();
+  rich.refresh();
   if (refreshContent) render();
 }
 
@@ -114,10 +134,10 @@ function renderList() {
 
 function renderEditor() {
   const n = current();
-  const content = n?.content ?? "";
-  if (editorEl.value !== content) editorEl.value = content;
-  editorEl.disabled = !n;
-  editorEl.placeholder = n ? "" : t("editor.placeholder");
+  if ((n?.id ?? null) !== loadedId) {
+    loadedId = n?.id ?? null;
+    rich.load(n ? (n.html ?? plainToHtml(n.content)) : "", Boolean(n));
+  }
   editorWrap.classList.toggle("disabled", !n);
   deleteBtn.disabled = !n;
   menuBar.querySelector('[data-action="delete"]')?.classList.toggle("disabled", !n);
@@ -171,7 +191,7 @@ function select(id: string | null) {
 function newNote() {
   const cur = current();
   if (cur && !cur.content.trim()) {
-    editorEl.focus();
+    rich.focus();
     return;
   }
   const now = Date.now();
@@ -182,7 +202,7 @@ function newNote() {
     searchEl.value = "";
   }
   select(note.id);
-  editorEl.focus();
+  rich.focus();
 }
 
 async function deleteNote() {
@@ -238,8 +258,33 @@ async function chooseLocale(code: string) {
 }
 
 function openLink(url: string) {
+  if (!isOpenableUrl(url)) return;
   if (isTauri) openUrl(url);
   else window.open(url, "_blank", "noopener");
+}
+
+async function editLink() {
+  if (!rich.editable) return;
+  const field = { value: rich.linkHref() };
+  const existing = Boolean(field.value);
+  const buttons = existing
+    ? [t("dialog.ok"), t("dialog.link.remove"), t("dialog.cancel")]
+    : [t("dialog.ok"), t("dialog.cancel")];
+  const choice = await showDialog({
+    title: t("fmt.link"),
+    message: t("dialog.link.message"),
+    hint: t("dialog.link.hint", { key: isMac ? "⌘" : "Ctrl" }),
+    input: field,
+    buttons,
+  });
+  if (choice === buttons.length - 1) rich.focus();
+  else if (existing && choice === 1) rich.run("unlink");
+  else rich.setLink(field.value);
+}
+
+function find() {
+  searchEl.focus();
+  searchEl.select();
 }
 
 async function closeWindow() {
@@ -251,6 +296,7 @@ const actions: Record<string, () => unknown> = {
   new: newNote,
   delete: deleteNote,
   exit: closeWindow,
+  find,
   about,
 };
 
@@ -259,9 +305,12 @@ const actions: Record<string, () => unknown> = {
 interface DialogOptions {
   title: string;
   message: string;
+  hint?: string;
   badge?: string;
   link?: string;
-  icon: "warn" | "info";
+  /** Shows a text field; its final value is written back to `value`. */
+  input?: { value: string };
+  icon?: "warn" | "info";
   buttons: string[];
 }
 
@@ -276,7 +325,7 @@ function showDialog(opts: DialogOptions): Promise<number> {
           <div class="title-bar-controls"><button class="btn-close">${ICONS.close}</button></div>
         </div>
         <div class="dialog-body">
-          <div class="dialog-icon">${ICONS[opts.icon]}</div>
+          ${opts.icon ? `<div class="dialog-icon">${ICONS[opts.icon]}</div>` : ""}
           <div class="dialog-content"><div class="dialog-msg"></div></div>
         </div>
         <div class="dialog-buttons"></div>
@@ -303,9 +352,25 @@ function showDialog(opts: DialogOptions): Promise<number> {
       });
       content.append(a);
     }
+    let field: HTMLInputElement | null = null;
+    if (opts.input) {
+      field = document.createElement("input");
+      field.className = "field dialog-field";
+      field.type = "text";
+      field.spellcheck = false;
+      field.value = opts.input.value;
+      content.append(field);
+    }
+    if (opts.hint) {
+      const hint = document.createElement("div");
+      hint.className = "dialog-hint";
+      hint.textContent = opts.hint;
+      content.append(hint);
+    }
 
     const cancelIndex = opts.buttons.length - 1;
     const done = (i: number) => {
+      if (field && opts.input) opts.input.value = field.value;
       document.removeEventListener("keydown", onKey, true);
       overlay.remove();
       resolve(i);
@@ -315,6 +380,9 @@ function showDialog(opts: DialogOptions): Promise<number> {
         e.preventDefault();
         e.stopPropagation();
         done(cancelIndex);
+      } else if (e.key === "Enter" && field && e.target === field && !e.isComposing) {
+        e.preventDefault();
+        done(0);
       }
     };
 
@@ -334,7 +402,12 @@ function showDialog(opts: DialogOptions): Promise<number> {
 
     document.addEventListener("keydown", onKey, true);
     document.body.append(overlay);
-    box.querySelector("button")!.focus();
+    if (field) {
+      field.focus();
+      field.select();
+    } else {
+      box.querySelector("button")!.focus();
+    }
   });
 }
 
@@ -355,7 +428,7 @@ function openMenu(item: Element) {
 
 function setupMenus() {
   menuBar.querySelectorAll<HTMLElement>("[data-accel]").forEach((el) => {
-    el.textContent = (isMac ? "⌘" : "Ctrl+") + el.dataset.accel;
+    el.textContent = accelText(el.dataset.accel!);
   });
   menuBar.querySelectorAll(".menu-item").forEach((item) => {
     item.querySelector(".menu-label")!.addEventListener("mousedown", (e) => {
@@ -374,6 +447,10 @@ function setupMenus() {
     closeMenus();
     if (opt.dataset.locale) {
       void chooseLocale(opt.dataset.locale);
+      return;
+    }
+    if (opt.dataset.cmd) {
+      formatBar?.run(opt.dataset.cmd, opt.dataset.value);
       return;
     }
     actions[opt.dataset.action!]?.();
@@ -422,15 +499,6 @@ function setupEvents() {
   byId("btn-new").addEventListener("click", newNote);
   deleteBtn.addEventListener("click", deleteNote);
 
-  editorEl.addEventListener("input", () => {
-    const n = current();
-    if (!n) return;
-    n.content = editorEl.value;
-    n.updatedAt = Date.now();
-    render();
-    scheduleSave();
-  });
-
   searchEl.addEventListener("input", () => {
     query = searchEl.value;
     renderList();
@@ -440,11 +508,11 @@ function setupEvents() {
     const li = (e.target as HTMLElement).closest<HTMLElement>("li[data-id]");
     if (li) select(li.dataset.id!);
   });
-  listEl.addEventListener("dblclick", () => editorEl.focus());
+  listEl.addEventListener("dblclick", () => rich.focus());
   listEl.addEventListener("keydown", (e) => {
     if (e.key === "ArrowDown") moveSelection(1);
     else if (e.key === "ArrowUp") moveSelection(-1);
-    else if (e.key === "Enter") editorEl.focus();
+    else if (e.key === "Enter") rich.focus();
     else if (e.key === "Delete" || e.key === "Backspace") deleteNote();
     else return;
     e.preventDefault();
@@ -459,25 +527,46 @@ function setupEvents() {
       newNote();
     } else if (mod && key === "f") {
       e.preventDefault();
-      searchEl.focus();
-      searchEl.select();
-    } else if (mod && key === "s") {
+      find();
+    } else if (mod && key === "s" && !e.shiftKey) {
       e.preventDefault();
       flush();
+    } else if (mod && key === "k" && rich.editable) {
+      e.preventDefault();
+      void editLink();
     } else if (e.key === "Escape") {
       closeMenus();
     }
   });
 
   document.addEventListener("contextmenu", (e) => {
-    if (!(e.target as HTMLElement).closest("textarea, input")) e.preventDefault();
+    if (!(e.target as HTMLElement).closest("textarea, input, .ProseMirror")) e.preventDefault();
   });
 }
 
 // ---------- boot ----------
 
+function setupEditor() {
+  rich = new RichEditor(byId("editor"), {
+    placeholder: () => (current() ? "" : t("editor.placeholder")),
+    onChange: () => {
+      const n = current();
+      if (!n) return;
+      n.html = rich.html();
+      n.content = rich.text();
+      n.updatedAt = Date.now();
+      render();
+      scheduleSave();
+    },
+    onState: () => formatBar?.sync(),
+    onOpenLink: (href) => openLink(href),
+  });
+  formatBar = setupFormatBar(rich, { editLink: () => void editLink() });
+}
+
 async function init() {
   fillIcons();
+  setupEditor();
   let saved = "";
   try {
     saved = await loadLocale();

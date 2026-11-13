@@ -31,6 +31,47 @@
           </div>
         </div>
         <div class="menu-item">
+          <span class="menu-label" data-i18n="menu.edit" data-i18n-mnemonic="menu.edit.mnemonic"></span>
+          <div class="menu-dropdown">
+            <div class="menu-option" data-cmd="undo"><span data-i18n="fmt.undo"></span><span class="accel" data-accel="Z"></span></div>
+            <div class="menu-option" data-cmd="redo"><span data-i18n="fmt.redo"></span><span class="accel" data-accel="Shift+Z"></span></div>
+            <div class="menu-sep"></div>
+            <div class="menu-option" data-cmd="selectAll"><span data-i18n="menu.selectAll"></span><span class="accel" data-accel="A"></span></div>
+            <div class="menu-option" data-action="find"><span data-i18n="menu.find"></span><span class="accel" data-accel="F"></span></div>
+          </div>
+        </div>
+        <div class="menu-item">
+          <span class="menu-label" data-i18n="menu.format" data-i18n-mnemonic="menu.format.mnemonic"></span>
+          <div class="menu-dropdown">
+            <div class="menu-option" data-cmd="bold"><span data-i18n="fmt.bold"></span><span class="accel" data-accel="B"></span></div>
+            <div class="menu-option" data-cmd="italic"><span data-i18n="fmt.italic"></span><span class="accel" data-accel="I"></span></div>
+            <div class="menu-option" data-cmd="underline"><span data-i18n="fmt.underline"></span><span class="accel" data-accel="U"></span></div>
+            <div class="menu-option" data-cmd="strike"><span data-i18n="fmt.strike"></span><span class="accel" data-accel="Shift+S"></span></div>
+            <div class="menu-sep"></div>
+            <div class="menu-option" data-cmd="superscript"><span data-i18n="fmt.superscript"></span><span class="accel" data-accel="."></span></div>
+            <div class="menu-option" data-cmd="subscript"><span data-i18n="fmt.subscript"></span><span class="accel" data-accel=","></span></div>
+            <div class="menu-option" data-cmd="code"><span data-i18n="fmt.code"></span><span class="accel" data-accel="E"></span></div>
+            <div class="menu-sep"></div>
+            <div class="menu-option has-sub">
+              <span data-i18n="menu.lineHeight"></span>
+              <span class="submenu-arrow"></span>
+              <div class="menu-dropdown">
+                <div class="menu-option" data-cmd="lineHeight" data-value="1"><span>1.0</span></div>
+                <div class="menu-option" data-cmd="lineHeight" data-value="1.15"><span>1.15</span></div>
+                <div class="menu-option" data-cmd="lineHeight" data-value="1.5"><span>1.5</span></div>
+                <div class="menu-option" data-cmd="lineHeight" data-value="2"><span>2.0</span></div>
+                <div class="menu-option" data-cmd="lineHeight" data-value="2.5"><span>2.5</span></div>
+                <div class="menu-option" data-cmd="lineHeight" data-value="3"><span>3.0</span></div>
+              </div>
+            </div>
+            <div class="menu-sep"></div>
+            <div class="menu-option" data-cmd="link"><span data-i18n="fmt.link"></span><span class="accel" data-accel="K"></span></div>
+            <div class="menu-option" data-cmd="hr"><span data-i18n="fmt.hr"></span><span class="accel"></span></div>
+            <div class="menu-sep"></div>
+            <div class="menu-option" data-cmd="clear"><span data-i18n="fmt.clear"></span><span class="accel" data-accel="\"></span></div>
+          </div>
+        </div>
+        <div class="menu-item">
           <span class="menu-label" data-i18n="menu.settings" data-i18n-mnemonic="menu.settings.mnemonic"></span>
           <div class="menu-dropdown">
             <div class="menu-option has-sub">
@@ -61,10 +102,65 @@
         <input class="field" id="search" type="text" spellcheck="false" autocomplete="off" />
       </div>
 
+      <div class="toolbar format-bar" id="format-bar">
+        <button class="tool-btn icon" data-cmd="undo" data-shortcut="Z" data-i18n-title="fmt.undo"><span data-icon="undo"></span></button>
+        <button class="tool-btn icon" data-cmd="redo" data-shortcut="Shift+Z" data-i18n-title="fmt.redo"><span data-icon="redo"></span></button>
+        <div class="toolbar-sep"></div>
+        <span class="combo combo-style">
+          <select id="fmt-style" data-i18n-title="fmt.style">
+            <option value="p" data-i18n="style.normal"></option>
+            <option value="h1" data-i18n="style.h1"></option>
+            <option value="h2" data-i18n="style.h2"></option>
+            <option value="h3" data-i18n="style.h3"></option>
+            <option value="quote" data-i18n="style.quote"></option>
+            <option value="code" data-i18n="style.code"></option>
+          </select>
+        </span>
+        <span class="combo combo-font">
+          <select id="fmt-font" data-i18n-title="fmt.font">
+            <option value="" data-i18n="font.default"></option>
+          </select>
+        </span>
+        <span class="combo combo-size">
+          <select id="fmt-size" data-i18n-title="fmt.size"></select>
+        </span>
+        <div class="toolbar-sep"></div>
+        <button class="tool-btn icon glyph" data-cmd="bold" data-shortcut="B" data-i18n-title="fmt.bold"><b>B</b></button>
+        <button class="tool-btn icon glyph" data-cmd="italic" data-shortcut="I" data-i18n-title="fmt.italic"><i>I</i></button>
+        <button class="tool-btn icon glyph" data-cmd="underline" data-shortcut="U" data-i18n-title="fmt.underline"><u>U</u></button>
+        <button class="tool-btn icon glyph" data-cmd="strike" data-shortcut="Shift+S" data-i18n-title="fmt.strike"><s>S</s></button>
+        <button class="tool-btn icon glyph" data-cmd="superscript" data-shortcut="." data-i18n-title="fmt.superscript"><span>x<sup>2</sup></span></button>
+        <button class="tool-btn icon glyph" data-cmd="subscript" data-shortcut="," data-i18n-title="fmt.subscript"><span>x<sub>2</sub></span></button>
+        <div class="toolbar-sep"></div>
+        <span class="split">
+          <button class="tool-btn icon" data-cmd="textColor" data-i18n-title="fmt.textColor"><span data-icon="textColor"></span><span class="swatch-bar" style="background: #ff0000"></span></button>
+          <button class="tool-btn split-arrow" data-palette="textColor" data-i18n-title="fmt.textColor"><span class="arrow-down"></span></button>
+        </span>
+        <span class="split">
+          <button class="tool-btn icon" data-cmd="highlight" data-i18n-title="fmt.highlight"><span data-icon="highlight"></span><span class="swatch-bar" style="background: #ffff00"></span></button>
+          <button class="tool-btn split-arrow" data-palette="highlight" data-i18n-title="fmt.highlight"><span class="arrow-down"></span></button>
+        </span>
+        <div class="toolbar-sep"></div>
+        <button class="tool-btn icon" data-cmd="align" data-value="left" data-shortcut="Shift+L" data-i18n-title="fmt.alignLeft"><span data-icon="alignLeft"></span></button>
+        <button class="tool-btn icon" data-cmd="align" data-value="center" data-shortcut="Shift+E" data-i18n-title="fmt.alignCenter"><span data-icon="alignCenter"></span></button>
+        <button class="tool-btn icon" data-cmd="align" data-value="right" data-shortcut="Shift+R" data-i18n-title="fmt.alignRight"><span data-icon="alignRight"></span></button>
+        <button class="tool-btn icon" data-cmd="align" data-value="justify" data-shortcut="Shift+J" data-i18n-title="fmt.alignJustify"><span data-icon="alignJustify"></span></button>
+        <div class="toolbar-sep"></div>
+        <button class="tool-btn icon" data-cmd="bulletList" data-shortcut="Shift+8" data-i18n-title="fmt.bulletList"><span data-icon="bulletList"></span></button>
+        <button class="tool-btn icon" data-cmd="orderedList" data-shortcut="Shift+7" data-i18n-title="fmt.orderedList"><span data-icon="orderedList"></span></button>
+        <button class="tool-btn icon" data-cmd="taskList" data-shortcut="Shift+9" data-i18n-title="fmt.taskList"><span data-icon="taskList"></span></button>
+        <button class="tool-btn icon" data-cmd="outdent" data-i18n-title="fmt.outdent"><span data-icon="outdent"></span></button>
+        <button class="tool-btn icon" data-cmd="indent" data-i18n-title="fmt.indent"><span data-icon="indent"></span></button>
+        <div class="toolbar-sep"></div>
+        <button class="tool-btn icon" data-cmd="link" data-shortcut="K" data-i18n-title="fmt.link"><span data-icon="link"></span></button>
+        <button class="tool-btn icon" data-cmd="hr" data-i18n-title="fmt.hr"><span data-icon="hr"></span></button>
+        <button class="tool-btn icon" data-cmd="clear" data-shortcut="\" data-i18n-title="fmt.clear"><span data-icon="clearFormat"></span></button>
+      </div>
+
       <div class="main">
         <ul class="list" id="note-list" tabindex="0"></ul>
         <div class="editor-wrap" id="editor-wrap">
-          <textarea id="editor" spellcheck="false"></textarea>
+          <div id="editor"></div>
         </div>
       </div>
 
